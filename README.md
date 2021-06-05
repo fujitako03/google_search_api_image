@@ -23,9 +23,13 @@ pipenv install
 ```
 
 ## 実行
-`config/search.yaml`に検索したいワード(search_word)、検索回数(page_limit)、1検索あたりの取得枚数(image_num)を入力してください。例えばpage_limitを20、image_numを10にした場合、20×10で最大200枚取得できます。
+`config/search.yaml`に検索したいクエリ(search_query)、検索回数(page_limit)、1検索あたりの取得枚数(image_num)を入力してください。
+- search_queriesは複数設定でき、順に実行されます
+- 例えばpage_limitを20、image_numを10にした場合、20×10で最大200枚取得できます。
 ```yaml
-search_word: 東京 住宅街 # 検索ワード
+search_queries: 
+    - 東京 住宅街 # 1つめの検索クエリ
+    - 神奈川 住宅街 # 2つめの検索クエリ
 page_limit: 3 # 何ページ取得するか
 image_num: 10 # 最大10
 ```

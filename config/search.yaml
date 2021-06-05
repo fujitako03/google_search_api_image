@@ -1,3 +1,5 @@
-search_word: 東京 住宅街
-page_limit: 3
+search_queries:
+  - 東京 住宅街
+  - 神奈川 住宅街
+page_limit: 1
 image_num: 10

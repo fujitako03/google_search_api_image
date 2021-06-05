@@ -16,11 +16,12 @@ ci = CollectImage(
 )
 
 #検索ワード
-search_word = search_config.search_word
+search_queries = search_config.search_queries
 
 # 実行(outputの下に保存される)
-ci.collect_image(
-    search_word=search_config.search_word,
-    page_limit=search_config.page_limit,
-    image_num=search_config.image_num
-    )
+for query in search_queries:
+    ci.collect_image(
+        search_query=query,
+        page_limit=search_config.page_limit,
+        image_num=search_config.image_num
+        )

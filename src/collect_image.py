@@ -2,6 +2,7 @@ import os
 
 import requests
 from googleapiclient.discovery import build
+from tqdm import tqdm
 
 
 class CollectImage():
@@ -10,11 +11,11 @@ class CollectImage():
         self.cse_id = cse_id
         self.output_dir = 'output'
 
-    def serch_image(self, search_word, page_limit, image_num):
+    def serch_image(self, search_query, page_limit, image_num):
         """指定したワードでserch apiを叩き、responceのリストを返す
 
         Args:
-            search_word ([type]): 検索ワード
+            search_query ([type]): 検索ワード
             page_limit ([type]): 何ページ取得するか
             image_num ([type]): 
 
@@ -26,10 +27,11 @@ class CollectImage():
         start_index = 1
         response_list = []
 
+        print("APIの実行")
         for n_page in range(0, page_limit):
             try:
                 response_list.append(service.cse().list(
-                    q=search_word, 
+                    q=search_query, 
                     cx=self.cse_id, 
                     lr='lang_ja', # 検索言語
                     num=image_num, # 1リクエストでいくつの画像を取得するか(Max 10)
@@ -53,7 +55,7 @@ class CollectImage():
             [type]: [description]
         """
         img_url_list = []
-        for one_res in range(len(responce_list)):
+        for one_res in tqdm(range(len(responce_list))):
             if len(responce_list[one_res]['items']) > 0:
                 for i in range(len(responce_list[one_res]['items'])):
                     img_url_list.append(responce_list[one_res]['items'][i]['link'])
@@ -76,21 +78,23 @@ class CollectImage():
         
         return None
     
-    def collect_image(self, search_word, page_limit=10, image_num=10):
+    def collect_image(self, search_query, page_limit=10, image_num=10):
         """指定したワードをもとに画像を収集する 全体の実行関数
 
         Args:
-            search_word ([type]): [description]
+            search_query ([type]): [description]
             page_limit (int, optional): [description]. Defaults to 10.
             image_num (int, optional): [description]. Defaults to 10.
 
         Returns:
             [type]: [description]
         """
+        print("\n","="*30)
+        print("検索ワード", search_query)
 
         # search api実行
         response_list = self.serch_image(
-            search_word=search_word,
+            search_query=search_query,
             page_limit=page_limit,
             image_num=image_num,
             )
@@ -99,18 +103,32 @@ class CollectImage():
         url_list = self.make_url_from_responce(responce_list=response_list)
 
         # urlから画像を保存
-        for i in range(len(url_list)):
+        print("画像のダウンロード")
+        failed_url_list = []
+        for i in tqdm(range(len(url_list))):
             # 拡張子を取得
             extension = os.path.splitext(url_list[i].split("?")[0])[-1]    
 
             # 出力先を決める
-            output_path = os.path.join(self.output_dir, f"{search_word}_{str(i)}{extension}")
+            output_path = os.path.join(self.output_dir, f"{search_query}_{str(i)}{extension}")
 
             # ダウンロードする
             try:
                 self.download_file(url_list[i], output_path=output_path)
             except:
-                print("保存に失敗しました ", url_list[i])
+                failed_url_list.append(url_list[i])
+        
+        # 保存した枚数
+        max_image_num = page_limit * image_num
+        failed_image_num = len(failed_url_list)
+        success_image_num = max_image_num - failed_image_num
+        print(f"{success_image_num}枚/ {max_image_num}枚 の画像が保存に成功しました")
+
+        # 保存に失敗した画像一覧
+        if len(failed_url_list) > 0:
+            print(f"失敗したURL")
+            for error_url in failed_url_list:
+                print(error_url)
         
         return None
 
