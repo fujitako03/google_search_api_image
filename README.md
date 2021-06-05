@@ -1,0 +1,2 @@
+# google_search_api_image
+googleのsearch apiを使って画像を収集します
